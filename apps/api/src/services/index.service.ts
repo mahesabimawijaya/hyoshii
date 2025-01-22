@@ -32,16 +32,16 @@ SELECT
 export async function getQtyAccumulation() {
   const result = await prisma.$queryRaw<
     Array<{
-      qtyA: number;
-      qtyB: number;
-      qtyC: number;
+      QtyA: number;
+      QtyB: number;
+      QtyC: number;
       time: Date;
     }>
   >`
     SELECT
-      SUM("qtyA") AS "qtyA",
-      SUM("qtyB") AS "qtyB",
-      SUM("qtyC") AS "qtyC",
+      SUM("qtyA") AS "QtyA",
+      SUM("qtyB") AS "QtyB",
+      SUM("qtyC") AS "QtyC",
       DATE_TRUNC('hour', "createdAt") AS "time"
     FROM "Pack"
     GROUP BY DATE_TRUNC('hour', "createdAt")
@@ -93,7 +93,7 @@ export async function getGrossRatio(type: "day" | "hour") {
     type === "hour"
       ? await prisma.$queryRaw<
           Array<{
-            ratio: number;
+            reject: number;
             time: Date;
           }>
         >`
@@ -104,7 +104,7 @@ export async function getGrossRatio(type: "day" | "hour") {
           ELSE (SUM("rejectedQty") / SUM("grossWeight")) * 100
         END,
         2
-      ) AS "ratio",
+      ) AS "reject",
       DATE_TRUNC('hour', "createdAt") AS "time"
     FROM "Pack"
     GROUP BY DATE_TRUNC('hour', "createdAt")
@@ -112,7 +112,7 @@ export async function getGrossRatio(type: "day" | "hour") {
   `
       : await prisma.$queryRaw<
           Array<{
-            ratio: number;
+            reject: number;
             time: Date;
           }>
         >`
@@ -123,7 +123,7 @@ export async function getGrossRatio(type: "day" | "hour") {
           ELSE (SUM("rejectedQty") / SUM("grossWeight")) * 100
         END,
         2
-      ) AS "ratio",
+      ) AS "reject",
       DATE_TRUNC('day', "createdAt") AS "time"
     FROM "Pack"
     GROUP BY DATE_TRUNC('day', "createdAt")
@@ -138,9 +138,9 @@ export async function getQtyRatio(type: "day" | "hour") {
     type === "hour"
       ? await prisma.$queryRaw<
           Array<{
-            qtyA: number;
-            qtyB: number;
-            qtyC: number;
+            QtyA: number;
+            QtyB: number;
+            QtyC: number;
             time: Date;
           }>
         >`
@@ -151,21 +151,21 @@ export async function getQtyRatio(type: "day" | "hour") {
           ELSE (SUM("qtyA") / SUM("qtyA" + "qtyB" + "qtyC")) * 100
         END,
         2
-      ) AS "qtyA",
+      ) AS "QtyA",
       ROUND(
         CASE
           WHEN SUM("qtyA" + "qtyB" + "qtyC") = 0 THEN 0
           ELSE (SUM("qtyB") / SUM("qtyA" + "qtyB" + "qtyC")) * 100
         END,
         2
-      ) AS "qtyB",
+      ) AS "QtyB",
       ROUND(
         CASE
           WHEN SUM("qtyA" + "qtyB" + "qtyC") = 0 THEN 0
           ELSE (SUM("qtyC") / SUM("qtyA" + "qtyB" + "qtyC")) * 100
         END,
         2
-      ) AS "qtyC",
+      ) AS "QtyC",
       DATE_TRUNC('hour', "createdAt") AS "time"
     FROM "Pack"
     GROUP BY DATE_TRUNC('hour', "createdAt")
@@ -173,9 +173,9 @@ export async function getQtyRatio(type: "day" | "hour") {
   `
       : await prisma.$queryRaw<
           Array<{
-            qtyA: number;
-            qtyB: number;
-            qtyC: number;
+            QtyA: number;
+            QtyB: number;
+            QtyC: number;
             time: Date;
           }>
         >`
@@ -186,21 +186,21 @@ export async function getQtyRatio(type: "day" | "hour") {
           ELSE (SUM("qtyA") / SUM("qtyA" + "qtyB" + "qtyC")) * 100
         END,
         2
-      ) AS "qtyA",
+      ) AS "QtyA",
       ROUND(
         CASE
           WHEN SUM("qtyA" + "qtyB" + "qtyC") = 0 THEN 0
           ELSE (SUM("qtyB") / SUM("qtyA" + "qtyB" + "qtyC")) * 100
         END,
         2
-      ) AS "qtyB",
+      ) AS "QtyB",
       ROUND(
         CASE
           WHEN SUM("qtyA" + "qtyB" + "qtyC") = 0 THEN 0
           ELSE (SUM("qtyC") / SUM("qtyA" + "qtyB" + "qtyC")) * 100
         END,
         2
-      ) AS "qtyC",
+      ) AS "QtyC",
       DATE_TRUNC('day', "createdAt") AS "time"
     FROM "Pack"
     GROUP BY DATE_TRUNC('day', "createdAt")

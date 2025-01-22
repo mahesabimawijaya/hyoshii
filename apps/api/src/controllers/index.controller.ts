@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as packService from "../services/index.service";
+import { time } from "console";
 
 export async function createPack(req: Request, res: Response): Promise<any> {
   try {
@@ -41,23 +42,38 @@ export async function getPicAccumulation(req: Request, res: Response): Promise<a
   try {
     const rawData = await packService.getPicAccumulation();
 
-    // Group data by time and format the response
-    const chartData = rawData.reduce((acc: any[], curr) => {
-      const existingEntry = acc.find((item) => item.time.toISOString() === curr.time.toISOString());
+    // Step 1: Extract unique PIC names and timestamps
+    const allPics = Array.from(new Set(rawData.map((entry) => entry.pic)));
+    const allTimes = Array.from(new Set(rawData.map((entry) => entry.time.toISOString())));
 
-      if (existingEntry) {
-        existingEntry[curr.pic] = curr.totalQty;
-      } else {
-        acc.push({
-          time: curr.time,
-          [curr.pic]: curr.totalQty,
+    // Step 2: Fill missing records
+    const filledData = allTimes.map((time) => {
+      const formattedTime = new Date(time).toLocaleString("id-ID", {
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+
+      // Create an object with all PICs initialized to 0
+      const timeEntry: Record<string, any> = { time: formattedTime };
+      allPics.forEach((pic) => {
+        timeEntry[pic] = 0; // Default to 0
+      });
+
+      // Fill in actual data for this time
+      rawData
+        .filter((entry) => entry.time.toISOString() === time)
+        .forEach((entry) => {
+          timeEntry[entry.pic] = entry.totalQty;
         });
-      }
 
-      return acc;
-    }, []);
+      return timeEntry;
+    });
 
-    return res.status(200).json(chartData);
+    return res.status(200).json(filledData);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -66,7 +82,21 @@ export async function getPicAccumulation(req: Request, res: Response): Promise<a
 
 export async function getQtyAccumulation(req: Request, res: Response): Promise<any> {
   try {
-    const chartData = await packService.getQtyAccumulation();
+    const rawData = await packService.getQtyAccumulation();
+    const chartData = rawData.map((item) => ({
+      QtyA: item.QtyA,
+      QtyB: item.QtyB,
+      QtyC: item.QtyC,
+      time: item.time.toLocaleString("id-ID", {
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
+    }));
+
     return res.status(200).json(chartData);
   } catch (error) {
     console.error(error);
@@ -79,23 +109,38 @@ export async function getPicProductivity(req: Request, res: Response): Promise<a
     const type = (req.query.type as "day" | "hour") ?? "hour";
     const rawData = await packService.getPicProductivity(type);
 
-    // Group data by time and format the response
-    const chartData = rawData.reduce((acc: any[], curr) => {
-      const existingEntry = acc.find((item) => item.time.toISOString() === curr.time.toISOString());
+    // Step 1: Extract unique PIC names and timestamps
+    const allPics = Array.from(new Set(rawData.map((entry) => entry.pic)));
+    const allTimes = Array.from(new Set(rawData.map((entry) => entry.time.toISOString())));
 
-      if (existingEntry) {
-        existingEntry[curr.pic] = curr.totalQty;
-      } else {
-        acc.push({
-          time: curr.time,
-          [curr.pic]: curr.totalQty,
+    // Step 2: Fill missing records
+    const filledData = allTimes.map((time) => {
+      const formattedTime = new Date(time).toLocaleString("id-ID", {
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+
+      // Create an object with all PICs initialized to 0
+      const timeEntry: Record<string, any> = { time: formattedTime };
+      allPics.forEach((pic) => {
+        timeEntry[pic] = 0; // Default to 0
+      });
+
+      // Fill in actual data for this time
+      rawData
+        .filter((entry) => entry.time.toISOString() === time)
+        .forEach((entry) => {
+          timeEntry[entry.pic] = entry.totalQty;
         });
-      }
 
-      return acc;
-    }, []);
+      return timeEntry;
+    });
 
-    return res.status(200).json(chartData);
+    return res.status(200).json(filledData);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -105,7 +150,19 @@ export async function getPicProductivity(req: Request, res: Response): Promise<a
 export async function getGrossRatio(req: Request, res: Response): Promise<any> {
   try {
     const type = (req.query.type as "day" | "hour") ?? "hour";
-    const chartData = await packService.getGrossRatio(type);
+    const rawData = await packService.getGrossRatio(type);
+    const chartData = rawData.map((item) => ({
+      reject: item.reject,
+      time: item.time.toLocaleString("id-ID", {
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
+    }));
+
     return res.status(200).json(chartData);
   } catch (error) {
     console.error(error);
@@ -116,7 +173,20 @@ export async function getGrossRatio(req: Request, res: Response): Promise<any> {
 export async function getQtyRatio(req: Request, res: Response): Promise<any> {
   try {
     const type = (req.query.type as "day" | "hour") ?? "hour";
-    const chartData = await packService.getQtyRatio(type);
+    const rawData = await packService.getQtyRatio(type);
+    const chartData = rawData.map((item) => ({
+      QtyA: item.QtyA,
+      QtyB: item.QtyB,
+      QtyC: item.QtyC,
+      time: item.time.toLocaleString("id-ID", {
+        year: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
+    }));
     return res.status(200).json(chartData);
   } catch (error) {
     console.error(error);

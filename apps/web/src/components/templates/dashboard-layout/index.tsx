@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: FC<DashboardLayoutProps> = ({ children, title = "Dashboard" }) => {
   return (
     <Container className="py-10">
-      <Flex direction="col" directionMd="col" align="start" gap="gap-3">
+      <Flex direction="col" directionMd="col" align="start" gap="gap-3" className="xl:pl-32">
         <h1 className="text-4xl font-bold">{title}</h1>
         <Flex className="text-gray-700 text-lg font-medium">
           Dashboard{" "}
